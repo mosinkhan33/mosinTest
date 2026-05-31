@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Resume Builder — Land That Job</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #09090f;
+    --bg2: #111118;
+    --bg3: #16161f;
+    --surface: #1c1c28;
+    --surface2: #222232;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #f0eff8;
+    --text2: #9896b0;
+    --text3: #5e5c78;
+    --accent: #7c6af7;
+    --accent-light: #a99ef9;
+    --accent-dim: rgba(124,106,247,0.15);
+    --green: #34d399;
+    --green-dim: rgba(52,211,153,0.12);
+    --amber: #fbbf24;
+    --amber-dim: rgba(251,191,36,0.12);
+    --blue: #60a5fa;
+    --blue-dim: rgba(96,165,250,0.12);
+    --red: #f87171;
+    --radius: 14px;
+    --radius-sm: 8px;
+    --radius-pill: 999px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse at 15% 15%, rgba(124,106,247,0.07) 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 85%, rgba(52,211,153,0.05) 0%, transparent 55%),
+      linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px);
+    background-size: auto, auto, 56px 56px, 56px 56px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 48px 20px 80px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: var(--radius-pill);
+    background: var(--accent-dim);
+    border: 1px solid rgba(124,106,247,0.3);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-light);
+    margin-bottom: 18px;
+  }
+  .header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(32px, 6vw, 52px);
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    background: linear-gradient(140deg, #fff 30%, var(--accent-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+  }
+  .header p {
+    color: var(--text2);
+    font-size: 15px;
+    font-weight: 300;
+  }
+
+  /* Steps bar */
+  .steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+  }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text3);
+    border: 1px solid transparent;
+    transition: all 0.25s;
+    cursor: default;
+  }
+  .step.active {
+    color: var(--text);
+    background: var(--surface);
+    border-color: var(--border2);
+  }
+  .step.done { color: var(--green); }
+  .step-num {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 600;
+    flex-shrink: 0;
+    transition: all 0.25s;
+  }
+  .step.active .step-num {
+    background: var(--accent-dim);
+    border-color: rgba(124,106,247,0.5);
+    color: var(--accent-light);
+  }
+  .step.done .step-num {
+    background: var(--green-dim);
+    border-color: rgba(52,211,153,0.4);
+    color: var(--green);
+  }
+  .step-connector {
+    width: 24px; height: 1px;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+  .step-connector.done { background: rgba(52,211,153,0.3); }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+  }
+
+  .card-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    font-weight: 400;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+  .card-sub {
+    font-size: 14px;
+    color: var(--text2);
+    margin-bottom: 20px;
+    font-weight: 300;
+    line-height: 1.6;
+  }
+
+  /* Form elements */
+  label.field-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 8px;
+  }
+  textarea, input[type="text"] {
+    width: 100%;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.6;
+  }
+  textarea:focus, input[type="text"]:focus {
+    border-color: rgba(124,106,247,0.5);
+  }
+  textarea::placeholder, input::placeholder { color: var(--text3); }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text2);
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn:hover { background: var(--surface2); color: var(--text); border-color: var(--border2); }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 600;
+  }
+  .btn-primary:hover { background: #6b5ae6; border-color: #6b5ae6; color: #fff; }
+  .btn-primary:disabled { background: var(--accent); border-color: var(--accent); }
+  .btn-success {
+    background: var(--green-dim);
+    border-color: rgba(52,211,153,0.35);
+    color: var(--green);
+  }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+
+  /* Keyword chips */
+  .chip-cloud { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 20px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 12px;
+    border-radius: var(--radius-pill);
+    font-size: 12px; font-weight: 500;
+    border: 1px solid;
+  }
+  .chip-high { background: var(--green-dim); border-color: rgba(52,211,153,0.3); color: var(--green); }
+  .chip-medium { background: var(--amber-dim); border-color: rgba(251,191,36,0.3); color: var(--amber); }
+  .chip-low { background: var(--blue-dim); border-color: rgba(96,165,250,0.3); color: var(--blue); }
+  .chip-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+  /* Job overview */
+  .job-overview {
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 16px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    margin-bottom: 20px;
+  }
+  .job-icon {
+    width: 40px; height: 40px; border-radius: var(--radius-sm);
+    background: var(--accent-dim);
+    border: 1px solid rgba(124,106,247,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .job-title { font-weight: 600; font-size: 15px; margin-bottom: 2px; }
+  .job-company { font-size: 13px; color: var(--text2); margin-bottom: 6px; }
+  .job-summary { font-size: 13px; color: var(--text2); line-height: 1.6; }
+  .job-signal { font-size: 12px; color: var(--amber); margin-top: 6px; font-style: italic; }
+
+  /* Keyword list */
+  .kw-list { display: flex; flex-direction: column; gap: 6px; }
+  .kw-item {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 10px 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+  }
+  .kw-badge { font-size: 10px; font-weight: 700; min-width: 44px; letter-spacing: 0.04em; padding-top: 1px; }
+  .kw-name { font-weight: 600; font-size: 13px; margin-bottom: 3px; }
+  .kw-exp { color: var(--text2); font-size: 12px; line-height: 1.5; font-weight: 300; }
+
+  /* Upload zone */
+  .upload-zone {
+    border: 2px dashed var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 28px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 16px;
+  }
+  .upload-zone:hover { border-color: rgba(124,106,247,0.5); background: var(--accent-dim); }
+  .upload-zone .uz-icon { font-size: 28px; margin-bottom: 8px; }
+  .upload-zone p { font-size: 13px; color: var(--text2); margin: 3px 0; }
+  .upload-zone strong { color: var(--text); font-weight: 500; }
+
+  /* Divider */
+  .divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 16px 0;
+  }
+  .divider-line { flex: 1; height: 1px; background: var(--border); }
+  .divider span { font-size: 12px; color: var(--text3); }
+
+  /* Output blocks */
+  .out-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 14px;
+    transition: border-color 0.2s;
+  }
+  .out-block:hover { border-color: var(--border2); }
+  .out-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg3);
+  }
+  .out-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text2);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .out-actions { display: flex; gap: 6px; }
+  .out-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px; font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text2);
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .out-btn:hover { background: var(--surface2); color: var(--text); }
+  .out-btn.copied { border-color: rgba(52,211,153,0.4); color: var(--green); }
+  .out-content {
+    padding: 16px;
+    font-size: 13px; color: var(--text);
+    white-space: pre-wrap; line-height: 1.75;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+  }
+  .out-edit-area {
+    width: 100%; min-height: 200px;
+    background: transparent;
+    border: none;
+    padding: 16px;
+    font-size: 13px; color: var(--text);
+    white-space: pre-wrap; line-height: 1.75;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    resize: vertical;
+    outline: none;
+    display: none;
+  }
+  .out-save-row {
+    display: none;
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+    gap: 8px;
+  }
+
+  /* Success banner */
+  .success-banner {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px;
+    background: var(--green-dim);
+    border: 1px solid rgba(52,211,153,0.25);
+    border-radius: var(--radius-sm);
+    font-size: 13px; color: var(--green);
+    margin-bottom: 18px;
+  }
+  .success-banner svg { flex-shrink: 0; }
+
+  /* Loading */
+  .loading-row {
+    display: none;
+    align-items: center; gap: 10px;
+    margin-top: 14px;
+    font-size: 13px; color: var(--text2);
+  }
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(124,106,247,0.3);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Stream preview */
+  .stream-preview {
+    display: none;
+    margin-top: 12px;
+    padding: 12px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 11px; font-family: monospace;
+    color: var(--text3);
+    max-height: 80px;
+    overflow: hidden;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.5;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex; align-items: center; justify-content: center; gap: 18px;
+    margin-top: 16px;
+    font-size: 12px; color: var(--text3);
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+  /* Section divider */
+  .sep { height: 1px; background: var(--border); margin: 20px 0; }
+
+  /* API key section */
+  .api-section {
+    background: var(--amber-dim);
+    border: 1px solid rgba(251,191,36,0.25);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    margin-bottom: 20px;
+    font-size: 13px;
+  }
+  .api-section strong { color: var(--amber); display: block; margin-bottom: 8px; font-size: 13px; }
+  .api-section p { color: var(--text2); margin-bottom: 10px; line-height: 1.5; font-size: 12px; }
+  .api-input-row { display: flex; gap: 8px; }
+  .api-input-row input { flex: 1; font-family: monospace; font-size: 12px; }
+  .api-note { font-size: 11px; color: var(--text3); margin-top: 8px; }
+  .api-note a { color: var(--accent-light); text-decoration: none; }
+  .api-note a:hover { text-decoration: underline; }
+
+  .hidden { display: none !important; }
+
+  /* Responsive */
+  @media (max-width: 500px) {
+    .wrap { padding: 28px 14px 60px; }
+    .card { padding: 20px 16px; }
+    .steps { gap: 2px; }
+    .step span { display: none; }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 3px; }
+
+  /* Footer */
+  .footer { text-align: center; margin-top: 48px; font-size: 12px; color: var(--text3); }
+  .footer a { color: var(--text3); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-badge">✦ AI Resume Builder</div>
+    <h1>Land That Job</h1>
+    <p>Paste a JD → get a tailored resume, cover letter &amp; cold email in seconds</p>
+  </div>
+
+  <!-- Steps -->
+  <div class="steps" id="steps-bar">
+    <div class="step active" id="s0"><div class="step-num">1</div><span>Job Description</span></div>
+    <div class="step-connector" id="sc0"></div>
+    <div class="step" id="s1"><div class="step-num">2</div><span>Keywords</span></div>
+    <div class="step-connector" id="sc1"></div>
+    <div class="step" id="s2"><div class="step-num">3</div><span>Your Resume</span></div>
+    <div class="step-connector" id="sc2"></div>
+    <div class="step" id="s3"><div class="step-num">4</div><span>Results</span></div>
+  </div>
+
+  <!-- ── PAGE 0: JD ── -->
+  <div id="page0">
+    <!-- API Key -->
+    <div class="api-section" id="api-box">
+      <strong>⚡ One-time setup — Anthropic API Key</strong>
+      <p>This tool uses the Claude AI API. You need a free API key to get started. It's saved only in your browser session.</p>
+      <div class="api-input-row">
+        <input type="password" id="api-key-input" placeholder="sk-ant-api03-…" />
+        <button class="btn btn-primary" onclick="saveApiKey()">Save Key</button>
+      </div>
+      <p class="api-note">Get your free key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> → API Keys. Your key never leaves your browser.</p>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">Paste the Job Description</h2>
+      <p class="card-sub">We'll extract keywords and explain exactly what they're hiring for — so your resume speaks their language.</p>
+      <label class="field-label">Job Description</label>
+      <textarea id="jd-input" rows="11" placeholder="Paste the full job description here — job title, responsibilities, requirements, qualifications, everything…"></textarea>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-analyze" onclick="analyzeJD()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Analyze Job Description
+        </button>
+      </div>
+      <div class="loading-row" id="p0-load">
+        <div class="spinner"></div>
+        <span id="p0-msg">Analyzing job description…</span>
+      </div>
+      <div class="stream-preview" id="p0-stream"></div>
+    </div>
+  </div>
+
+  <!-- ── PAGE 1: Keywords ── -->
+  <div id="page1" class="hidden">
+    <div class="card">
+      <div class="job-overview" id="job-overview"></div>
+
+      <h2 class="card-title" style="font-size:18px;">Key Terms to Match</h2>
+      <p class="card-sub">These are the signals the hiring team is looking for. Your resume needs to speak this language.</p>
+
+      <div class="chip-cloud" id="kw-chips"></div>
+      <div class="kw-list" id="kw-list"></div>
+
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> High priority</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div> Medium</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> Good to have</div>
+      </div>
+
+      <div class="sep"></div>
+      <div class="btn-row">
+        <button class="btn" onclick="gotoPage(0)">← Back</button>
+        <button class="btn btn-primary" onclick="gotoPage(2)">Add My Resume →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE 2: Resume ── -->
+  <div id="page2" class="hidden">
+    <div class="card">
+      <h2 class="card-title">Add Your Existing Resume</h2>
+      <p class="card-sub">We refine — never fabricate. Your real experience will be reframed to naturally match the JD keywords. No fake skills or invented jobs.</p>
+
+      <div class="upload-zone" onclick="document.getElementById('file-in').click()">
+        <div class="uz-icon">📄</div>
+        <p><strong>Click to upload a .txt file</strong></p>
+        <p>Plain text (.txt or .md) works best</p>
+        <input type="file" id="file-in" accept=".txt,.md,.text" style="display:none;" onchange="handleFile(event)">
+      </div>
+
+      <div class="divider">
+        <div class="divider-line"></div>
+        <span>or paste directly below</span>
+        <div class="divider-line"></div>
+      </div>
+
+      <label class="field-label">Resume Text</label>
+      <textarea id="resume-input" rows="13" placeholder="Paste your full resume here as plain text…&#10;&#10;Include everything: name, contact info, work experience with dates, education, skills, certifications."></textarea>
+
+      <div class="btn-row">
+        <button class="btn" onclick="gotoPage(1)">← Back</button>
+        <button class="btn btn-primary" id="btn-generate" onclick="generateAll()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+          Generate Resume + Cover Letter + Email
+        </button>
+      </div>
+      <div class="loading-row" id="p2-load">
+        <div class="spinner"></div>
+        <span id="p2-msg">Crafting your tailored documents…</span>
+      </div>
+      <div class="stream-preview" id="p2-stream"></div>
+    </div>
+  </div>
+
+  <!-- ── PAGE 3: Results ── -->
+  <div id="page3" class="hidden">
+    <div class="success-banner">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <div><strong>All three documents are ready!</strong> Edit any section, then copy and use.</div>
+    </div>
+
+    <!-- Resume -->
+    <div class="out-block">
+      <div class="out-header">
+        <div class="out-label">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Updated Resume
+        </div>
+        <div class="out-actions">
+          <button class="out-btn" onclick="toggleEdit('resume')">✎ Edit</button>
+          <button class="out-btn" id="copy-resume" onclick="copyOut('resume', this)">⎘ Copy</button>
+        </div>
+      </div>
+      <div class="out-content" id="resume-display"></div>
+      <textarea class="out-edit-area" id="resume-edit"></textarea>
+      <div class="out-save-row" id="resume-save-row" style="display:none; gap:8px;">
+        <button class="btn btn-success" onclick="saveEdit('resume')">✓ Save</button>
+        <button class="btn" onclick="cancelEdit('resume')">✕ Cancel</button>
+      </div>
+    </div>
+
+    <!-- Cover Letter -->
+    <div class="out-block">
+      <div class="out-header">
+        <div class="out-label">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Cover Letter
+        </div>
+        <div class="out-actions">
+          <button class="out-btn" onclick="toggleEdit('cover')">✎ Edit</button>
+          <button class="out-btn" id="copy-cover" onclick="copyOut('cover', this)">⎘ Copy</button>
+        </div>
+      </div>
+      <div class="out-content" id="cover-display"></div>
+      <textarea class="out-edit-area" id="cover-edit"></textarea>
+      <div class="out-save-row" id="cover-save-row" style="display:none; gap:8px;">
+        <button class="btn btn-success" onclick="saveEdit('cover')">✓ Save</button>
+        <button class="btn" onclick="cancelEdit('cover')">✕ Cancel</button>
+      </div>
+    </div>
+
+    <!-- Cold Email -->
+    <div class="out-block">
+      <div class="out-header">
+        <div class="out-label">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Cold Email
+        </div>
+        <div class="out-actions">
+          <button class="out-btn" onclick="toggleEdit('email')">✎ Edit</button>
+          <button class="out-btn" id="copy-email" onclick="copyOut('email', this)">⎘ Copy</button>
+        </div>
+      </div>
+      <div class="out-content" id="email-display"></div>
+      <textarea class="out-edit-area" id="email-edit"></textarea>
+      <div class="out-save-row" id="email-save-row" style="display:none; gap:8px;">
+        <button class="btn btn-success" onclick="saveEdit('email')">✓ Save</button>
+        <button class="btn" onclick="cancelEdit('email')">✕ Cancel</button>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn" onclick="gotoPage(2)">← Tweak Resume</button>
+      <button class="btn" onclick="startOver()">↺ New Application</button>
+    </div>
+  </div>
+
+  <div class="footer">
+    Built with Claude AI &nbsp;·&nbsp; Your data stays in your browser
+  </div>
+
+</div>
+
+<script>
+let APP = { jd: '', keywords: [], jobMeta: {}, resume: '', results: {}, apiKey: '' };
+
+// ── API Key ──────────────────────────────────────────────────────────────
+function saveApiKey() {
+  const v = document.getElementById('api-key-input').value.trim();
+  if (!v) { alert('Please enter your API key.'); return; }
+  APP.apiKey = v;
+  document.getElementById('api-box').style.display = 'none';
+  showToast('API key saved for this session ✓');
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1c1c28;border:1px solid rgba(255,255,255,0.15);color:#f0eff8;padding:10px 20px;border-radius:8px;font-size:13px;z-index:9999;font-family:DM Sans,sans-serif;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+// ── Page navigation ──────────────────────────────────────────────────────
+function gotoPage(n) {
+  [0,1,2,3].forEach(i => {
+    document.getElementById('page'+i).classList.toggle('hidden', i !== n);
+    const s = document.getElementById('s'+i);
+    s.classList.remove('active','done');
+    const dot = s.querySelector('.step-num');
+    if (i < n) { s.classList.add('done'); dot.textContent = '✓'; }
+    else if (i === n) { s.classList.add('active'); dot.textContent = i+1; }
+    else { dot.textContent = i+1; }
+    if (i < 3) {
+      const c = document.getElementById('sc'+i);
+      c.classList.toggle('done', i < n);
+    }
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Claude API ───────────────────────────────────────────────────────────
+async function callClaude(messages, system, onStream) {
+  const key = APP.apiKey || sessionStorage.getItem('rb_key');
+  if (!key) { alert('Please enter your Anthropic API key first.'); throw new Error('No API key'); }
+  const body = { model: 'claude-sonnet-4-20250514', max_tokens: 4000, messages };
+  if (system) body.system = system;
+  if (onStream) body.stream = true;
+
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify(body)
+  });
+
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.error?.message || 'API error ' + resp.status);
+  }
+
+  if (onStream) {
+    const reader = resp.body.getReader(); const dec = new TextDecoder(); let full = '';
+    while (true) {
+      const { done, value } = await reader.read(); if (done) break;
+      for (const line of dec.decode(value).split('\n').filter(l => l.startsWith('data: '))) {
+        try { const d = JSON.parse(line.slice(6)); if (d.delta?.text) { full += d.delta.text; onStream(full); } } catch(_){}
+      }
+    }
+    return full;
+  }
+  const data = await resp.json(); return data.content?.[0]?.text || '';
+}
+
+// ── Step 1: Analyze JD ──────────────────────────────────────────────────
+async function analyzeJD() {
+  const jd = document.getElementById('jd-input').value.trim();
+  if (!jd) { alert('Please paste a job description first.'); return; }
+  if (!APP.apiKey) { alert('Please enter your Anthropic API key first.'); return; }
+  APP.jd = jd;
+  const btn = document.getElementById('btn-analyze');
+  btn.disabled = true;
+  const loadEl = document.getElementById('p0-load');
+  const streamEl = document.getElementById('p0-stream');
+  loadEl.style.display = 'flex';
+  streamEl.style.display = 'block'; streamEl.textContent = '';
+  try {
+    const raw = await callClaude([{ role: 'user', content:
+      `Analyze this job description. Return ONLY valid JSON — no markdown, no backticks, nothing else.\n\n{"jobTitle":"...","company":"...","summary":"2-3 sentence overview of what this role needs and what they are looking for","hiringSignals":"one sentence on urgency or key signals you observe in the posting","keywords":[{"term":"...","relevance":"high|medium|low","explanation":"why this keyword matters for the role in one sentence"}]}\n\nReturn 12-18 keywords: technical skills, tools, soft skills, domain knowledge, methodologies.\n\nJob Description:\n${jd}`
+    }], 'You are a professional resume and career coach. Return only valid JSON with no extra text.', t => {
+      streamEl.textContent = t.slice(0, 280) + (t.length > 280 ? '…' : '');
+    });
+
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    APP.keywords = parsed.keywords || [];
+    APP.jobMeta = parsed;
+    renderKeywordsPage();
+    loadEl.style.display = 'none'; streamEl.style.display = 'none';
+    btn.disabled = false;
+    gotoPage(1);
+  } catch(e) {
+    loadEl.style.display = 'none';
+    streamEl.textContent = '❌ Error: ' + e.message;
+    btn.disabled = false;
+  }
+}
+
+function renderKeywordsPage() {
+  const m = APP.jobMeta;
+  document.getElementById('job-overview').innerHTML = `
+    <div class="job-icon">💼</div>
+    <div style="flex:1;min-width:0;">
+      <div class="job-title">${esc(m.jobTitle || 'Role')}</div>
+      ${m.company ? `<div class="job-company">@ ${esc(m.company)}</div>` : ''}
+      <div class="job-summary">${esc(m.summary || '')}</div>
+      ${m.hiringSignals ? `<div class="job-signal">🔍 ${esc(m.hiringSignals)}</div>` : ''}
+    </div>`;
+
+  const chips = document.getElementById('kw-chips');
+  chips.innerHTML = APP.keywords.map(k =>
+    `<span class="chip chip-${k.relevance||'medium'}"><span class="chip-dot"></span>${esc(k.term)}</span>`
+  ).join('');
+
+  const list = document.getElementById('kw-list');
+  const high = APP.keywords.filter(k => k.relevance === 'high');
+  list.innerHTML = high.map(k => `
+    <div class="kw-item">
+      <span class="kw-badge" style="color:var(--green);">★ HIGH</span>
+      <div><div class="kw-name">${esc(k.term)}</div><div class="kw-exp">${esc(k.explanation)}</div></div>
+    </div>`).join('');
+}
+
+// ── File upload ──────────────────────────────────────────────────────────
+function handleFile(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => { document.getElementById('resume-input').value = ev.target.result; showToast('File loaded ✓'); };
+  reader.readAsText(file);
+}
+
+// ── Step 2: Generate all ─────────────────────────────────────────────────
+async function generateAll() {
+  const resume = document.getElementById('resume-input').value.trim();
+  if (!resume) { alert('Please paste or upload your resume first.'); return; }
+  APP.resume = resume;
+  const btn = document.getElementById('btn-generate');
+  btn.disabled = true;
+  const loadEl = document.getElementById('p2-load');
+  const streamEl = document.getElementById('p2-stream');
+  loadEl.style.display = 'flex'; document.getElementById('p2-msg').textContent = 'Crafting your tailored documents…';
+  streamEl.style.display = 'block'; streamEl.textContent = '';
+  const kws = APP.keywords.map(k => k.term).join(', ');
+
+  try {
+    const raw = await callClaude([{ role: 'user', content:
+      `Given the job description and candidate's resume below, produce three outputs. Return ONLY valid JSON — no markdown, no backticks.\n\nKEYWORDS TO WEAVE IN (naturally, only where genuinely applicable): ${kws}\n\nJOB DESCRIPTION:\n${APP.jd}\n\nCANDIDATE RESUME:\n${resume}\n\nReturn exactly this JSON:\n{"updatedResume":"The full refined resume as plain text. Preserve ALL real experience, dates, companies, and job titles exactly. Rephrase bullet points to naturally incorporate relevant keywords where truly applicable. Never invent skills, tools, or experience that are not in the original. Add or expand a Skills section only from what is evident in their existing background.","coverLetter":"A compelling 3-paragraph cover letter for this specific role. Reference real matching experience from the resume. Professional, warm, and authentic tone. Use [Your Name] and [Date] placeholders at the top.","coldEmail":"Subject: ...\\n\\nEmail body under 150 words. Reference 1-2 specific real achievements. Direct, human, professional. Use [Your Name] at the end."}`
+    }], 'You are an expert resume writer and career coach. Your job is to REFINE, never fabricate. Preserve all real dates, companies, and roles. Only rephrase, never invent. Return only valid JSON.', t => {
+      streamEl.textContent = t.slice(0, 300) + (t.length > 300 ? '…' : '');
+    });
+
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    APP.results = parsed;
+
+    document.getElementById('resume-display').textContent = parsed.updatedResume || '';
+    document.getElementById('resume-edit').value = parsed.updatedResume || '';
+    document.getElementById('cover-display').textContent = parsed.coverLetter || '';
+    document.getElementById('cover-edit').value = parsed.coverLetter || '';
+    document.getElementById('email-display').textContent = parsed.coldEmail || '';
+    document.getElementById('email-edit').value = parsed.coldEmail || '';
+
+    loadEl.style.display = 'none'; streamEl.style.display = 'none';
+    btn.disabled = false;
+    gotoPage(3);
+  } catch(e) {
+    loadEl.style.display = 'none';
+    streamEl.textContent = '❌ Error: ' + e.message;
+    btn.disabled = false;
+  }
+}
+
+// ── Edit / Save / Copy ───────────────────────────────────────────────────
+function toggleEdit(key) {
+  const disp = document.getElementById(key+'-display');
+  const edit = document.getElementById(key+'-edit');
+  const saveRow = document.getElementById(key+'-save-row');
+  const isEditing = edit.style.display !== 'none';
+  if (isEditing) { cancelEdit(key); return; }
+  disp.style.display = 'none'; edit.style.display = 'block'; saveRow.style.display = 'flex';
+}
+
+function saveEdit(key) {
+  const edit = document.getElementById(key+'-edit');
+  const disp = document.getElementById(key+'-display');
+  const saveRow = document.getElementById(key+'-save-row');
+  const srcKey = key === 'resume' ? 'updatedResume' : key === 'cover' ? 'coverLetter' : 'coldEmail';
+  APP.results[srcKey] = edit.value;
+  disp.textContent = edit.value;
+  disp.style.display = 'block'; edit.style.display = 'none'; saveRow.style.display = 'none';
+}
+
+function cancelEdit(key) {
+  const edit = document.getElementById(key+'-edit');
+  const disp = document.getElementById(key+'-display');
+  const saveRow = document.getElementById(key+'-save-row');
+  const srcKey = key === 'resume' ? 'updatedResume' : key === 'cover' ? 'coverLetter' : 'coldEmail';
+  edit.value = APP.results[srcKey] || '';
+  disp.style.display = 'block'; edit.style.display = 'none'; saveRow.style.display = 'none';
+}
+
+function copyOut(key, btn) {
+  const srcKey = key === 'resume' ? 'updatedResume' : key === 'cover' ? 'coverLetter' : 'coldEmail';
+  navigator.clipboard.writeText(APP.results[srcKey] || '').then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied!'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
+function startOver() {
+  APP = { jd:'', keywords:[], jobMeta:{}, resume:'', results:{}, apiKey: APP.apiKey };
+  document.getElementById('jd-input').value = '';
+  document.getElementById('resume-input').value = '';
+  gotoPage(0);
+}
+
+function esc(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
